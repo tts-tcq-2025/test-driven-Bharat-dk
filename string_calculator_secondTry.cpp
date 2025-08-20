@@ -6,7 +6,7 @@
 #include <algorithm>
 
 // A helper function to split a string by multiple delimiters.
-// It returns a vector of strings (tokens).
+// CCN = 4.
 std::vector<std::string> split(const std::string& str, const std::string& delimiters) {
     std::vector<std::string> tokens;
     size_t start = 0;
@@ -26,54 +26,56 @@ std::vector<std::string> split(const std::string& str, const std::string& delimi
     return tokens;
 }
 
+// A helper function to build the negative numbers exception message.
+// CCN = 3.
+std::string buildNegativeMessage(const std::vector<int>& negatives) {
+    std::string error_msg = "negatives not allowed: ";
+    for (size_t i = 0; i < negatives.size(); ++i) {
+        error_msg += std::to_string(negatives[i]);
+        if (i < negatives.size() - 1) {
+            error_msg += ",";
+        }
+    }
+    return error_msg;
+}
+
 // A helper function to process the numbers, check for negatives, and compute the sum.
-int processNumbers(const std::vector<std::string>& tokens) {
+// It is designed to have a CCN of 4.
+int sumAndValidateTokens(const std::vector<std::string>& tokens) {
     int sum = 0;
     std::vector<int> negatives;
     
-    // Iterate through each token to parse, validate, and sum.
+    // First pass: parse and find negatives
     for (const auto& token : tokens) {
         if (token.empty()) {
-            continue; // Skip empty tokens that can result from multiple delimiters.
+            continue;
         }
-        try {
-            int number = std::stoi(token);
-            if (number < 0) {
-                negatives.push_back(number);
-            }
-            sum += number;
-        } catch (const std::invalid_argument& e) {
-            // Handle non-numeric strings gracefully if they occur.
-            // For this problem, we assume all tokens are valid numbers.
+        int number = std::stoi(token);
+        if (number < 0) {
+            negatives.push_back(number);
         }
+        sum += number;
     }
     
-    // If any negative numbers were found, throw an exception.
+    // Second pass: check for negatives and throw exception
     if (!negatives.empty()) {
-        std::string error_msg = "negatives not allowed: ";
-        for (size_t i = 0; i < negatives.size(); ++i) {
-            error_msg += std::to_string(negatives[i]);
-            if (i < negatives.size() - 1) {
-                error_msg += ", ";
-            }
-        }
-        throw std::runtime_error(error_msg);
+        throw std::runtime_error(buildNegativeMessage(negatives));
     }
     
     return sum;
 }
 
 // The main String Calculator function.
+// It is designed to have a CCN of 4.
 int Add(const std::string& numbers) {
-    // 1. Handle empty string case.
     if (numbers.empty()) {
         return 0;
     }
 
-    std::string delimiters = ",";
+    std::string delimiters = ",\n";
     std::string numbers_str = numbers;
 
-    // 2. Check for custom delimiters.
+    // Check for custom delimiters.
     if (numbers.substr(0, 2) == "//") {
         size_t newline_pos = numbers.find('\n');
         if (newline_pos != std::string::npos) {
@@ -81,17 +83,10 @@ int Add(const std::string& numbers) {
             numbers_str = numbers.substr(newline_pos + 1);
         }
     }
-
-    // Add newline as a default delimiter if not already present.
-    if (delimiters.find('\n') == std::string::npos) {
-        delimiters += '\n';
-    }
-
-    // 3. Split the string into number tokens.
+    
     std::vector<std::string> tokens = split(numbers_str, delimiters);
-
-    // 4. Process the numbers to validate and sum.
-    return processNumbers(tokens);
+    
+    return sumAndValidateTokens(tokens);
 }
 
 // Main function to demonstrate the String Calculator.
